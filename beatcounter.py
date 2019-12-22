@@ -2,27 +2,67 @@
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 import os, time, sys
 
+class Section():
+
+    def __init__(self, length):
+        self.length = length
+        self.count = 0
+        self.widget = QtWidgets.QProgressBar()
+        self.widget.setTextVisible(False)
+        self.widget.setMinimum(0)
+        self.widget.setMaximum(length)
+
+    def reset(self):
+        self.count = 0
+        self.widget.setValue(self.count)
+
+    def add(self):
+        if self.count == self.length:
+            return 1
+        self.count += 1
+        self.widget.setValue(self.count)
+        return 0
+
+    def getWidget(self):
+        return self.widget
+
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-#        self.setWindowIcon(QtGui.QIcon('logo_pancom.ico'))
 
         uic.loadUi('beatcounter/mainwindow.ui', self)
 
         # buttons
         self.button_start.pressed.connect(lambda: self.start())
-#        self.button_stop.pressed.connect(lambda: self.start())
+        self.button_stop.pressed.connect(lambda: self.stop())
+        self.button_reset.pressed.connect(lambda: self.reset())
+        self.button_add.pressed.connect(lambda: self.add_section())
+
         self.lineEdit_bpm.textChanged.connect(lambda: self.update_bpm())
 
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_beat)
 
-        self.beat_count = 1
-        self.count16s = 1
-        self.count64s = 1
+        self.sections = []
+
+        self.reset()
+
+    def add_section(self):
+        section = Section(int(self.lineEdit_section.text()))
+        self.sections.append(section)
+        self.layout_bars.addWidget(section.getWidget())
+
+    def reset(self):
+        self.stop()
+        self.count_16s = 0
+        self.count_beats = 0
+        for section in self.sections:
+            section.reset()
+        self.update_widgets()
 
     def start(self):
+        self.update_beat()
         self.timer.start(self.get_ms_from_bpm())
 
     def stop(self):
@@ -33,27 +73,27 @@ class MainWindow(QtWidgets.QMainWindow):
         return 60000/bpm
 
     def update_bpm(self):
+        return
         self.timer.start(self.get_ms_from_bpm())
 
+    def increment_sections(self):
+        carry = False
+        for section in self.sections:
+            if not section.add():
+                break
+
     def update_beat(self):
-        self.progressBar_beat.setValue(self.beat_count)
-        self.progressBar_16s.setValue(self.count16s)
-        self.progressBar_64s.setValue(self.count64s)
+        self.count_beats += 1
+        if self.count_beats > 16:
+            self.count_beats = 1
+            self.count_16s += 1
+            self.increment_sections()
 
-        self.label_beats.setText(str(self.beat_count))
-        self.label_16s.setText(str(self.count16s))
-        self.label_64s.setText(str(self.count64s))
-        self.beat_count += 1
-        if self.beat_count > 16:
-            self.beat_count = 1
-            self.count16s += 1
+        self.update_widgets()
 
-        if self.count16s > 4:
-            self.count16s = 1
-            self.count64s += 1
-
-        if self.count64s > 16:
-            self.count64s = 1
+    def update_widgets(self):
+        self.progressBar_beat.setValue(self.count_beats)
+        self.label_16s.setText(str(self.count_16s))
 
 if __name__ == '__main__':
 
