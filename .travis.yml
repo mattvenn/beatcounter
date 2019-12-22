@@ -1,33 +1,35 @@
 language: python
 matrix:
   include:
-    - name: "Python 3.7.x on Xenial Linux"
-      python: 3.7           # this works for Linux but is ignored on macOS or Windows
-      dist: xenial          # required for Python >= 3.7
-    - name: "Python 3.7.4 on macOS"
-      os: osx
-      osx_image: xcode11    # Python 3.7.4 running on macOS 10.14.4
-      language: shell       # 'language: python' is an error on Travis CI macOS
-    - name: "Python 3.7.4 on Windows"
-      os: windows           # Windows 10.0.17134 N/A Build 17134
-      language: shell       # 'language: python' is an error on Travis CI Windows
-      before_install:
-        - choco install python --version 3.7.4 # was just uppdated to 3.8 default by travis, which breaks upgrade pip
-        - python -m pip install --upgrade pip
-      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
-
+  - name: Python 3.7.x on Xenial Linux
+    python: 3.7
+    dist: xenial
+  - name: Python 3.7.4 on macOS
+    os: osx
+    osx_image: xcode11
+    language: shell
+  - name: Python 3.7.4 on Windows
+    os: windows
+    language: shell
+    before_install:
+    - choco install python --version 3.7.4
+    - python -m pip install --upgrade pip
+    env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
 install:
-  - pip3 install -r requirements.txt
+- pip3 install -r requirements.txt
 script:
-    - if [ $TRAVIS_OS_NAME == "linux" ];   then pyinstaller -F beatcounter.py -n beatcounter.appimage ; fi
-    - if [ $TRAVIS_OS_NAME == "windows" ]; then pyinstaller -F beatcounter.py -n beatcounter.exe      ; fi
-    - if [ $TRAVIS_OS_NAME == "osx" ];     then pyinstaller -F beatcounter.py -n beatcounter.dmg      ; fi
+- if [ $TRAVIS_OS_NAME == "linux" ];   then pyinstaller -F beatcounter.py -n beatcounter.appimage
+  ; fi
+- if [ $TRAVIS_OS_NAME == "windows" ]; then pyinstaller -F beatcounter.py -n beatcounter.exe      ;
+  fi
+- if [ $TRAVIS_OS_NAME == "osx" ];     then pyinstaller -F beatcounter.py -n beatcounter.dmg      ;
+  fi
 after_script:
-  - find dist build
+- find dist build
 deploy:
   provider: releases
-  api_key: 
-    secure: InN9eTB7RuEwObD8CZBsZuuI318d3XuoIa30ZZcjGH4fEboiubYv1jD+yDWqIkykbbGVvNI1rX2KkMGQLYGi7qlkIm6z5Btw1Rb/qC+ceOgaQE+OY3aF3lCZBTUdWP7YOklcn2xHLJuoSRcVlfcmvlLWZLzC2F01foYnpP6G382ZXgeV0LUclCqKihJyoVCH2IWGRx1tJMKNv9Ah8huaTFkNu3AQ052l/HQ1ZL7srRf/W+54gZuNF7NKmO5ICCaAWAn+r+AGdd/4cgIA7NJMb82mvfI2NSzY0u+GPe4rWIesHaWoBWQKoKg3orTvFL7qRFU8dbiccV4rQnhl6YJx/TnNMaNi0DYS3CAbTdn1pGZyMDAQhiqpUWR7NslTWEQkLKdw1TPTq597DDotH6VeiccEidgs7cQCZVOhZxZQsjZErPG746ZdRwxlldbH9ZMTJuHzGO7PMB5xAVaEdKOV4A8w7K31GxVULnjSlMajgLFzfVzWf4uFaahor0zQw/fqU1zTazFTx7f3h4rBCY2yjX2FNeqhr56wrLdl7t/SCuyYLP/P+l3EwZGyhQPjpGQYH+nWo1UeDG62yksK/lZs1w3DrqdCbTeABIU9vQl9ekM6ewD9K/ZXlpAZQCozxuyvKmud8DqHIP8x+Ph7DxPNgErc1u0oqkKhRluTQtDJAlI=
+  api_key:
+    secure: APWVqj/HyAk7dyKW91sbFNbFW9yRVxv+4zeHITDBUto1TtBXxP7Cz3b2dGz2AlIL5hpKiesVFAie9D/G3AEClxn4CD63/JYVAvKn+aJJNNF3N+LuQuxuBnpZycFu25/Rs98U3rMjS2lZpmSFTSazdEH6fy674vn40sPsRkCh3/BnCeGbR6ylntXbap/Ip57xhBZmKEEGo9TJAjYR9rAjmBo9v7ezrjNoRVFm0GpY5qpIS9A5bVANJMOnh+wV4B7NerhF55aTlQGLBErwGZ2emAO13PoWVJLu0ysxX++hyORK15UOzIKd2Ax0o13dcUFtAP4dbhQhD3wVAglTeU+RO3nZ/bcgQ2cRKhQ/i5YaBKPzCJ6mnqyrCXyG5HoEMyYq9B9LvI2B7j0XMVbFdgF3lL2aLtidgoeOBNsfkpJnF1EN51NZQNKo4lKaBICRRwCY/xFh9QdBqEpu3drbWFzSlVslZpP0hCsKXhF3bVJBQMUoZXOQwOqHygss7vPJRchBbBktmonG1oxtz25DGCsLhM0lMYWi4tPL6hjKdXYum/620DMlisLO3YUEFDv44Hxk+YXlM4/z366DDlICDoBHHjgJ+RJrZcj7Gtw2DeY3lr0FnABDOnjQoyrG+O5vKQuyW9nJEn8bIgzvQYydfm2vwksZ9njEFtKrHDjXV5L2coA=
   file_glob: true
   file: dist/*
   overwrite: true
