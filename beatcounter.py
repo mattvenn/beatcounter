@@ -57,7 +57,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self):
         super(self.__class__, self).__init__()
 
-        uic.loadUi('beatcounter/mainwindow.ui', self)
+
+        # working directory
+        try:
+           self.wd = sys._MEIPASS # if running inside pyinstaller
+        except AttributeError:
+           self.wd = os.getcwd()
+
+        uic.loadUi(os.path.join(self.wd, 'beatcounter', 'mainwindow.ui'), self)
 
         # buttons
         self.button_start.pressed.connect(lambda: self.start())
