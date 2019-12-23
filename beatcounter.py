@@ -2,29 +2,55 @@
 from PyQt5 import QtWidgets, uic, QtCore, QtGui
 import os, time, sys
 
-class Section():
+class Section(QtWidgets.QProgressBar):
 
-    def __init__(self, length):
+    def __init__(self, length, flash_rate):
+        super(self.__class__, self).__init__()
+        
         self.length = length
         self.count = 0
-        self.widget = QtWidgets.QProgressBar()
-        self.widget.setTextVisible(False)
-        self.widget.setMinimum(0)
-        self.widget.setMaximum(length)
+        #self.widget = QtWidgets.QProgressBar()
+        self.setTextVisible(False)
+        self.setMinimum(0)
+        self.setMaximum(length)
+        self.flash_rate = flash_rate
+
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.flash)
+        self.flash_state = True
 
     def reset(self):
         self.count = 0
-        self.widget.setValue(self.count)
+        self.setValue(self.count)
 
     def add(self):
-        if self.count == self.length:
-            return 1
-        self.count += 1
-        self.widget.setValue(self.count)
-        return 0
+        if self.count == self.maximum() - 1:
+            self.timer.start(self.flash_rate)
+            self.count += 1
+            self.setValue(self.count)
+            return 0
 
-    def getWidget(self):
-        return self.widget
+        elif self.count == self.maximum():
+            self.flash_state = False
+            self.flash()
+            self.timer.stop()
+            return 1
+
+        else:
+            self.count += 1
+            self.setValue(self.count)
+            return 0
+    
+    def flash(self):
+        palette = QtGui.QPalette(self.palette())
+        if self.flash_state:
+            colour = QtGui.QColor(QtCore.Qt.green)
+        else:
+            colour = QtGui.QColor(QtCore.Qt.blue)
+        palette.setColor(QtGui.QPalette.Highlight, colour)
+        self.setPalette(palette)
+
+        self.flash_state = not self.flash_state
 
 class MainWindow(QtWidgets.QMainWindow):
 
@@ -49,9 +75,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.reset()
 
     def add_section(self):
-        section = Section(int(self.lineEdit_section.text()))
+        section = Section(int(self.lineEdit_section.text()), self.get_ms_from_bpm()/2)
         self.sections.append(section)
-        self.layout_bars.addWidget(section.getWidget())
+        self.layout_bars.addWidget(section)
 
     def reset(self):
         self.stop()
