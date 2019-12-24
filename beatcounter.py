@@ -70,7 +70,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.button_start.pressed.connect(lambda: self.start())
         self.button_stop.pressed.connect(lambda: self.stop())
         self.button_reset.pressed.connect(lambda: self.reset())
-        self.button_add.pressed.connect(lambda: self.add_section())
+        self.button_add.pressed.connect(lambda: self.add_sections())
 
         self.lineEdit_bpm.textChanged.connect(lambda: self.update_bpm())
 
@@ -81,10 +81,24 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.reset()
 
-    def add_section(self):
-        section = Section(int(self.lineEdit_section.text()), self.get_ms_from_bpm()/2)
-        self.sections.append(section)
-        self.layout_bars.addWidget(section)
+    def add_sections(self):
+        sections = self.lineEdit_section.text().split(',')
+        for section in sections:
+            try:
+                section = Section(int(section), self.get_ms_from_bpm()/2)
+                self.sections.append(section)
+                self.layout_bars.addWidget(section)
+            except ValueError as e:
+                self.bad_sections_warning()
+                
+    def bad_sections_warning(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+
+        msg.setText('bad sections text "%s". Use comma separated integers' % self.lineEdit_section.text())
+        msg.setWindowTitle("warning")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.exec_()
 
     def reset(self):
         self.stop()
