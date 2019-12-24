@@ -64,7 +64,9 @@ class MainWindow(QtWidgets.QMainWindow):
         except AttributeError:
            self.wd = os.getcwd()
 
-        uic.loadUi(os.path.join(self.wd, 'beatcounter', 'mainwindow.ui'), self)
+        ui_path = os.path.join(self.wd, 'beatcounter', 'mainwindow.ui')
+        print("trying to load ui from %s" % ui_path)
+        uic.loadUi(ui_path, self)
 
         # buttons
         self.button_start.pressed.connect(lambda: self.start())
